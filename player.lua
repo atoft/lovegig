@@ -20,7 +20,6 @@ function updatePlayer(player, dt)
         player.vY = - BOUNCE_VELOCITY_Y
         player.vX = BOUNCE_VELOCITY_X * player.jumpDir
         player.jumpDir = -player.jumpDir
-
     end
 
     ---- Rebound from walls ----
@@ -30,6 +29,23 @@ function updatePlayer(player, dt)
     elseif player.x >= 720 - player.w then
         player.vX = -BOUNCE_VELOCITY_X
         player.jumpDir = 1
+    end
+
+    ---- Spawn bullets ----
+    if keys.JUMP then
+        bullet1 = {}
+        bullet1.x = player.x + player.w + 5 
+        bullet1.y = player.y
+        bullet1.vX = 500
+        bullet1.vY = 0
+        table.insert(bullets, bullet1)
+
+        bullet1 = {}
+        bullet1.x = player.x - 5 
+        bullet1.y = player.y
+        bullet1.vX = -500
+        bullet1.vY = 0
+        table.insert(bullets, bullet1)
     end
 
     ---- Apply speed ----

@@ -1,4 +1,5 @@
 require "player"
+require "bullet"
 
 print("hello")
 
@@ -18,14 +19,18 @@ function love.load()
     player.vY = 0
     
     player.jumpDir = 1
-
-    score = 0
     -------------------------------
+    bullets = {}
 
 end
 
 function love.update(dt)
     updatePlayer(player, dt)
+
+    for i = 1, #bullets, 1 do
+        bullet = bullets[i]
+        updateBullet(bullet, dt)
+    end
 end
 
 -----------------------------------------------------
@@ -37,5 +42,9 @@ function love.draw()
     --love.graphics.draw(images.player, player.x, player.y, 0, 1, 1, 22, 14)
 
     love.graphics.setColor(0,1,0)
+    for i = 1, #bullets, 1 do
+        bullet = bullets[i]
+        love.graphics.rectangle('fill', bullet.x, bullet.y, 10, 3)
+    end
 
 end
