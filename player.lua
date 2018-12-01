@@ -13,13 +13,31 @@ function updatePlayer(player, dt)
     local BOUNCE_VELOCITY_Y = 300
     local BOUNCE_VELOCITY_X = 200
 
+    local DIVE_VELOCITY = 1000
+
     player.vY = player.vY + ACCELERATION * dt
+
+    ---- Charge the dive ----
+    if love.keyboard.isDown("space") then
+        player.diveCharge = player.diveCharge + dt
+    end
 
     ---- Jump ----
     if keys.JUMP then
-        player.vY = - BOUNCE_VELOCITY_Y
-        player.vX = BOUNCE_VELOCITY_X * player.jumpDir
-        player.jumpDir = -player.jumpDir
+        if player.diveCharge <= DIVE_CHARGE_TIME then
+            player.isDiving = false
+            player.vY = - BOUNCE_VELOCITY_Y
+            player.vX = BOUNCE_VELOCITY_X * player.jumpDir
+            player.jumpDir = -player.jumpDir
+        else
+            player.isDiving = true
+        end
+        player.diveCharge = 0
+    end
+
+    if player.isDiving then
+        player.vX = 0
+        player.vY = DIVE_VELOCITY
     end
 
     ---- Rebound from walls ----
@@ -32,25 +50,44 @@ function updatePlayer(player, dt)
     end
 
     ---- Spawn bullets ----
-    if keys.JUMP then
+    if keys.JUMP and not player.isDiving then
         ---- Horizontal ----
-        local bullet1 = {}
-        bullet1.x = player.x + player.w + 5 
-        bullet1.y = player.y
-        bullet1.vX = 500
-        bullet1.vY = 0
-        bullet1.w = 10
-        bullet1.h = 3
-        table.insert(bullets, bullet1)
+        local bullet = {}
+        bullet.x = player.x + player.w + 5 
+        bullet.y = player.y
+        bullet.vX = 500
+        bullet.vY = 0
+        bullet.w = 10
+        bullet.h = 3
+        table.insert(bullets, bullet)
 
-        local bullet2 = {}
-        bullet2.x = player.x - 5 
-        bullet2.y = player.y
-        bullet2.vX = -500
-        bullet2.vY = 0
-        bullet2.w = 10
-        bullet2.h = 3
-        table.insert(bullets, bullet2)
+        local bullet = {}
+        bullet.x = player.x - 5 
+        bullet.y = player.y
+        bullet.vX = -500
+        bullet.vY = 0
+        bullet.w = 10
+        bullet.h = 3
+        table.insert(bullets, bullet)
+
+        ---- Vertical ----
+        local bullet = {}
+        bullet.x = player.x + player.w / 2
+        bullet.y = player.y - 5
+        bullet.vX = 0
+        bullet.vY = -500
+        bullet.w = 3
+        bullet.h = 10
+        table.insert(bullets, bullet)
+
+        local bullet = {}
+        bullet.x = player.x + player.w / 2
+        bullet.y = player.y + player.h + 5
+        bullet.vX = 0
+        bullet.vY = 500
+        bullet.w = 3
+        bullet.h = 10
+        table.insert(bullets, bullet)
         
     end
 
@@ -64,15 +101,34 @@ end
 
 function collidePlayerWithMonster(monster, player, dt)
     local REPEL_SPEED_PLAYER = 300
-    local REPEL_SPEED_MONSTER = 100
+    local REPEL_SPEED_MONSTER = 300
+
+    local REPEL_SPEED_MONSTER_DIVE = 1000
 
     if AABB(monster, player) then
-        local direction = normalize(monster.x - player.x, monster.y - player.y)
+        if not player.isDiving then
+            ---- Repel from each other ----
+            local direction = normalize(monster.x - player.x, monster.y - player.y)
 
-        player.vX = -direction.x * REPEL_SPEED_PLAYER
-        player.vY = -direction.y * REPEL_SPEED_PLAYER
+            player.vX = -direction.x * REPEL_SPEED_PLAYER
+            player.vY = -direction.y * REPEL_SPEED_PLAYER
 
-        monster.vX = direction.x * REPEL_SPEED_PLAYER
-        monster.vY = direction.y * REPEL_SPEED_PLAYER
+            --monster.vX = direction.x * REPEL_SPEED_MONSTER
+            --monster.vY = direction.y * REPEL_SPEED_MONSTER
+
+            ---- Take damage? ----
+            if isInvulnerable(player) == false then
+                player.health = player.health - 1
+                player.invulnStart = love.timer.getTime()
+            end
+        else
+            monster.state = "thrown"
+        end
     end
+end
+
+function isInvulnerable(player)
+    local PLAYER_INVULN_DURATION = 2.5
+
+    return love.timer.getTime() < player.invulnStart + PLAYER_INVULN_DURATION
 end

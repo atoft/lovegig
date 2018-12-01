@@ -6,6 +6,8 @@ require "collision"
 WORLD_X = 720
 WORLD_Y = 1280
 
+DIVE_CHARGE_TIME = 0.25
+
 function love.load()
     math.randomseed(os.time())
     -------------------------------
@@ -22,6 +24,12 @@ function love.load()
     player.vY = 0
     
     player.jumpDir = 1
+
+    player.health = 5
+    player.invulnStart = 0
+
+    player.isDiving = false
+    player.diveCharge = 0
     -------------------------------
     bullets = {}
     monsters = {}
@@ -38,13 +46,19 @@ function love.update(dt)
     for i = #bullets, 1, -1 do
         local bullet = bullets[i]
         updateBullet(bullet, dt)
-        collideBullet(bullet, monsters, dt)       
+        if collideBullet(bullet, monsters, dt) or isOffScreen(bullet) then
+            table.remove(bullets, i)
+        end              
     end
 
-    for i = 1, #monsters, 1 do
+    for i = #monsters, 1, -1 do
         monster = monsters[i]
         updateMonster(monster, player, dt)
         collidePlayerWithMonster(monster, player)
+
+        if monster.state == "dead" then
+            table.remove(monsters, i)
+        end
     end
 end
 
@@ -53,13 +67,19 @@ end
 function love.draw()
     love.graphics.setColor(1,1,1)
     
+    if(isInvulnerable(player)) then
+        love.graphics.setColor(1,0.5,0.5)
+    end
+
+    love.graphics.setColor(1,1,1 - (player.diveCharge / DIVE_CHARGE_TIME))
+
     love.graphics.rectangle('fill', player.x, player.y, player.w, player.h)
     --love.graphics.draw(images.player, player.x, player.y, 0, 1, 1, 22, 14)
 
     love.graphics.setColor(0,1,0)
     for i = 1, #bullets, 1 do
         bullet = bullets[i]
-        love.graphics.rectangle('fill', bullet.x, bullet.y, 10, 3)
+        love.graphics.rectangle('fill', bullet.x, bullet.y, bullet.w, bullet.h)
     end
 
     love.graphics.setColor(1,0,0)
@@ -68,4 +88,6 @@ function love.draw()
         love.graphics.rectangle('fill', monster.x, monster.y, monster.w, monster.h)
     end
 
+    love.graphics.setColor(1,1,1)
+    love.graphics.print("HEALTH " .. player.health, 10, 10)
 end

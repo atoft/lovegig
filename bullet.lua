@@ -7,11 +7,13 @@ function updateBullet(bullet, dt)
 end
 
 function collideBullet(bullet, monsters, dt)
-    for j = #monsters, 1, -1 do
+    for j = 1, #monsters, 1 do
         local monster = monsters[j]
         if AABB(bullet, monster) then
-            table.remove(monsters, j)
-            table.remove(bullets, i)
+            monster.state = "dead"
+            return true
         end
     end
+
+    return false
 end

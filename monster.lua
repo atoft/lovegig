@@ -24,16 +24,32 @@ function spawnMonster()
 
     monster.vX = 0
     monster.vY = 0
+    monster.state = "alive"
     
     table.insert(monsters, monster)
 end
 
 function updateMonster(monster, target, dt)
     local MONSTER_SPEED = 100
+    local MONSTER_THROW_SPEED = 1000
 
     direction = normalize(target.x - monster.x, target.y - monster.y)
-    monster.vX = direction.x * MONSTER_SPEED
-    monster.vY = direction.y * MONSTER_SPEED
+
+    if monster.state == "alive" then
+        monster.vX = direction.x * MONSTER_SPEED
+        monster.vY = direction.y * MONSTER_SPEED
+    elseif monster.state == "thrown" then
+        if not AABB(monster, target) then
+            monster.state = "dead"
+        else
+            if(direction.x > 0) then
+                monster.vX = -direction.x * MONSTER_THROW_SPEED
+            else
+                monster.vX = direction.x * MONSTER_THROW_SPEED
+            end
+        end
+        monster.vY = 0
+    end
 
     ---- Apply speed ----
     monster.x = monster.x + monster.vX * dt
