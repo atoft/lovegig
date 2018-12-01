@@ -1,7 +1,10 @@
 require "player"
 require "bullet"
+require "monster"
+require "collision"
 
-print("hello")
+WORLD_X = 720
+WORLD_Y = 1280
 
 function love.load()
     math.randomseed(os.time())
@@ -21,15 +24,27 @@ function love.load()
     player.jumpDir = 1
     -------------------------------
     bullets = {}
+    monsters = {}
 
 end
 
 function love.update(dt)
+    if math.random() < 0.01 then
+        spawnMonster()
+    end
+
     updatePlayer(player, dt)
 
-    for i = 1, #bullets, 1 do
-        bullet = bullets[i]
+    for i = #bullets, 1, -1 do
+        local bullet = bullets[i]
         updateBullet(bullet, dt)
+        collideBullet(bullet, monsters, dt)       
+    end
+
+    for i = 1, #monsters, 1 do
+        monster = monsters[i]
+        updateMonster(monster, player, dt)
+        collidePlayerWithMonster(monster, player)
     end
 end
 
@@ -45,6 +60,12 @@ function love.draw()
     for i = 1, #bullets, 1 do
         bullet = bullets[i]
         love.graphics.rectangle('fill', bullet.x, bullet.y, 10, 3)
+    end
+
+    love.graphics.setColor(1,0,0)
+    for i = 1, #monsters, 1 do
+        monster = monsters[i]
+        love.graphics.rectangle('fill', monster.x, monster.y, monster.w, monster.h)
     end
 
 end
