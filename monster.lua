@@ -3,8 +3,8 @@ require "tools"
 function spawnMonster()
     local monster = {}
 
-    monster.w = 100
-    monster.h = 100
+    monster.w = 80
+    monster.h = 80
 
     edgeToSpawn = math.random(1, 4)
 
@@ -43,9 +43,11 @@ function updateMonster(monster, target, dt)
             monster.state = "dead"
         else
             if(direction.x > 0) then
-                monster.vX = -direction.x * MONSTER_THROW_SPEED
+                monster.vX = -MONSTER_THROW_SPEED
+                print("Throw left")
             else
-                monster.vX = direction.x * MONSTER_THROW_SPEED
+                monster.vX = MONSTER_THROW_SPEED
+                print("throw right")
             end
         end
         monster.vY = 0

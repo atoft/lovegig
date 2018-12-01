@@ -15,6 +15,9 @@ function updatePlayer(player, dt)
 
     local DIVE_VELOCITY = 1000
 
+    local DIVE_DURATION = 1.5
+    local DIVE_END_VELOCITY_Y = 100
+
     player.vY = player.vY + ACCELERATION * dt
 
     ---- Charge the dive ----
@@ -26,6 +29,7 @@ function updatePlayer(player, dt)
     if keys.JUMP then
         if player.diveCharge <= DIVE_CHARGE_TIME then
             player.isDiving = false
+            player.diveTime = 0
             player.vY = - BOUNCE_VELOCITY_Y
             player.vX = BOUNCE_VELOCITY_X * player.jumpDir
             player.jumpDir = -player.jumpDir
@@ -38,6 +42,13 @@ function updatePlayer(player, dt)
     if player.isDiving then
         player.vX = 0
         player.vY = DIVE_VELOCITY
+        player.diveTime = player.diveTime + dt
+        if player.diveTime > DIVE_DURATION then
+            player.isDiving = false
+            player.diveTime = 0
+            player.vY = -DIVE_END_VELOCITY_Y
+            player.vX = BOUNCE_VELOCITY_X * player.jumpDir
+        end
     end
 
     ---- Rebound from walls ----
@@ -52,23 +63,23 @@ function updatePlayer(player, dt)
     ---- Spawn bullets ----
     if keys.JUMP and not player.isDiving then
         ---- Horizontal ----
-        local bullet = {}
-        bullet.x = player.x + player.w + 5 
-        bullet.y = player.y
-        bullet.vX = 500
-        bullet.vY = 0
-        bullet.w = 10
-        bullet.h = 3
-        table.insert(bullets, bullet)
+        -- local bullet = {}
+        -- bullet.x = player.x + player.w + 5 
+        -- bullet.y = player.y
+        -- bullet.vX = 500
+        -- bullet.vY = 0
+        -- bullet.w = 10
+        -- bullet.h = 3
+        -- table.insert(bullets, bullet)
 
-        local bullet = {}
-        bullet.x = player.x - 5 
-        bullet.y = player.y
-        bullet.vX = -500
-        bullet.vY = 0
-        bullet.w = 10
-        bullet.h = 3
-        table.insert(bullets, bullet)
+        -- local bullet = {}
+        -- bullet.x = player.x - 5 
+        -- bullet.y = player.y
+        -- bullet.vX = -500
+        -- bullet.vY = 0
+        -- bullet.w = 10
+        -- bullet.h = 3
+        -- table.insert(bullets, bullet)
 
         ---- Vertical ----
         local bullet = {}
@@ -94,6 +105,12 @@ function updatePlayer(player, dt)
     ---- Apply speed ----
     player.x = player.x + player.vX * dt
     player.y = player.y + player.vY * dt
+
+    if player.y > WORLD_Y then
+        player.y = player.y - WORLD_Y - player.h
+    elseif player.y < - player.h then
+        player.y = player.y + WORLD_Y + player.h
+    end
 
     keys.JUMP = false
 end

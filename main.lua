@@ -4,7 +4,7 @@ require "monster"
 require "collision"
 
 WORLD_X = 720
-WORLD_Y = 1280
+WORLD_Y = 1000
 
 DIVE_CHARGE_TIME = 0.25
 
@@ -17,7 +17,7 @@ function love.load()
     player = {}
     player.x = 200
     player.y = 200
-    player.w = 100
+    player.w = 60
     player.h = 100
 
     player.vX = 0
@@ -30,6 +30,7 @@ function love.load()
 
     player.isDiving = false
     player.diveCharge = 0
+    player.diveTime = 0
     -------------------------------
     bullets = {}
     monsters = {}
