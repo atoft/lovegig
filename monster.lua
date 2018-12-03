@@ -3,10 +3,10 @@ require "tools"
 function spawnMonster()
     local monster = {}
 
-    monster.w = 80
-    monster.h = 80
+    monster.w = 60
+    monster.h = 60
 
-    edgeToSpawn = math.random(1, 4)
+    edgeToSpawn = math.random(1, 2)
 
     if edgeToSpawn == 1 then
         monster.x = 0
@@ -14,23 +14,19 @@ function spawnMonster()
     elseif edgeToSpawn == 2 then
         monster.x = WORLD_X
         monster.y = math.random(1, WORLD_Y)
-    elseif edgeToSpawn == 3 then
-        monster.x = math.random(1, WORLD_X)
-        monster.y = 0
-    elseif edgeToSpawn == 4 then
-        monster.x = math.random(1, WORLD_Y)
-        monster.y = 0
     end
 
     monster.vX = 0
     monster.vY = 0
     monster.state = "alive"
-    
+    monster.sprite_idle = WAVES[currentWave].monster.idle
+    monster.sprite_thrown = WAVES[currentWave].monster.thrown
+
     table.insert(monsters, monster)
 end
 
 function updateMonster(monster, target, dt)
-    local MONSTER_SPEED = 100
+    local MONSTER_SPEED = WAVES[currentWave].monsterSpeed
     local MONSTER_THROW_SPEED = 1000
 
     direction = normalize(target.x - monster.x, target.y - monster.y)

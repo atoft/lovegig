@@ -1,4 +1,4 @@
-local keys = {}
+keys = {}
 keys.JUMP = false
 
 function love.keyreleased(key)
@@ -13,17 +13,22 @@ function updatePlayer(player, dt)
     local BOUNCE_VELOCITY_Y = 300
     local BOUNCE_VELOCITY_X = 200
 
-    local DIVE_VELOCITY = 1000
+    local DIVE_VELOCITY = 1500
 
-    local DIVE_DURATION = 1.5
+    local DIVE_DURATION = 0.15
     local DIVE_END_VELOCITY_Y = 100
 
     player.vY = player.vY + ACCELERATION * dt
 
+
+    player.state = "jump"
+
     ---- Charge the dive ----
     if love.keyboard.isDown("space") then
         player.diveCharge = player.diveCharge + dt
+        player.state = "jump_start"
     end
+
 
     ---- Jump ----
     if keys.JUMP then
@@ -35,19 +40,27 @@ function updatePlayer(player, dt)
             player.jumpDir = -player.jumpDir
         else
             player.isDiving = true
+            player.state = "dive_start"
         end
         player.diveCharge = 0
     end
 
     if player.isDiving then
-        player.vX = 0
-        player.vY = DIVE_VELOCITY
+        player.vX = -player.jumpDir * DIVE_VELOCITY
+        player.vY = 0
         player.diveTime = player.diveTime + dt
         if player.diveTime > DIVE_DURATION then
             player.isDiving = false
             player.diveTime = 0
             player.vY = -DIVE_END_VELOCITY_Y
-            player.vX = BOUNCE_VELOCITY_X * player.jumpDir
+            if player.vX > 0 then
+                player.vX = BOUNCE_VELOCITY_X
+            else
+                player.vX = -BOUNCE_VELOCITY_X
+            end
+            player.state = "dive_end"
+        else
+            player.state = "dive"
         end
     end
 
@@ -87,8 +100,8 @@ function updatePlayer(player, dt)
         bullet.y = player.y - 5
         bullet.vX = 0
         bullet.vY = -500
-        bullet.w = 3
-        bullet.h = 10
+        bullet.w = 20
+        bullet.h = 44
         table.insert(bullets, bullet)
 
         local bullet = {}
@@ -96,8 +109,8 @@ function updatePlayer(player, dt)
         bullet.y = player.y + player.h + 5
         bullet.vX = 0
         bullet.vY = 500
-        bullet.w = 3
-        bullet.h = 10
+        bullet.w = 20
+        bullet.h = 44
         table.insert(bullets, bullet)
         
     end
@@ -133,8 +146,14 @@ function collidePlayerWithMonster(monster, player, dt)
             --monster.vX = direction.x * REPEL_SPEED_MONSTER
             --monster.vY = direction.y * REPEL_SPEED_MONSTER
 
+            if player.vX > 0 then
+                player.jumpDir = -1
+            else
+                player.jumpDir = 1
+            end
+
             ---- Take damage? ----
-            if isInvulnerable(player) == false then
+            if (isInvulnerable(player) == false) and monster.state == "alive" then
                 player.health = player.health - 1
                 player.invulnStart = love.timer.getTime()
             end
