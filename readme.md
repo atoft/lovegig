@@ -2,6 +2,7 @@
 I helped out at the Hackers at Cambridge Game Gig with Studio Gobo.
 
 I worked on this game with the theme of One Button, using the Love 2D framework.
+![Example screenshot of NinjaBANG][readme_screencap]
 
 ## Attribution
 The following art assets are used in this project:
